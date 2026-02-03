@@ -1,0 +1,46 @@
+{
+  "name": "theme-genie",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "concurrently \"npm:dev:next\" \"npm:dev:python\"",
+    "dev:next": "next dev",
+    "dev:python": "./venv/bin/uvicorn analysis.api:app --reload --port 8000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:python": "cd analysis && pytest"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.15",
+    "@tailwindcss/postcss": "^4.1.18",
+    "ai": "^6.0.57",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "lucide-react": "^0.563.0",
+    "next": "^16.1.6",
+    "papaparse": "^5.5.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.4.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/json2csv": "^5.0.7",
+    "@types/node": "^25.0.10",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "concurrently": "^9.2.1",
+    "jsdom": "^27.4.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
