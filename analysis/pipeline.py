@@ -1,5 +1,6 @@
 """Main analysis pipeline with orchestration and progress tracking."""
 
+import asyncio
 import time
 from typing import List, Optional, Callable
 import google.generativeai as genai
@@ -221,7 +222,3 @@ async def analyze_responses(
         return await pure_llm_analysis(responses, context)
     else:
         return await hybrid_analysis(responses, on_progress)
-
-
-# Need to import asyncio for pure_llm_analysis
-import asyncio

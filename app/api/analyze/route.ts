@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       unassignedIndices: result.unassigned_indices,
       coveragePercentage: result.coverage_percentage,
       processingTime: result.processing_time_ms,
-      modelUsed: result.model_used || 'gemini-1.5-flash-latest',
+      modelUsed: result.model_used || 'gemini-3-flash-preview',
       createdAt: new Date(),
     };
 

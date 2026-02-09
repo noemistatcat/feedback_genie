@@ -91,7 +91,14 @@ feedback-genie/
 ├── context/                # React context (state management)
 └── analysis/               # Python backend
     ├── api.py              # FastAPI endpoints
-    └── hybrid_analyzer.py  # Analysis logic
+    ├── pipeline.py         # Analysis orchestration
+    ├── embeddings.py       # Embedding generation
+    ├── clustering.py       # K-means clustering
+    ├── labeling.py         # LLM theme labeling
+    ├── preprocessing.py    # Text preprocessing
+    ├── chunking.py         # Large dataset handling
+    ├── models.py           # Pydantic schemas
+    └── config.py           # Configuration
 ```
 
 ## License

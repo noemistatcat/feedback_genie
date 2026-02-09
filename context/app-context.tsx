@@ -284,6 +284,50 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     }
 
+    case 'REMOVE_THEME_FROM_RESPONSE': {
+      if (!state.analysis) return state;
+
+      const { responseIndex, themeId } = action.payload;
+
+      // Remove response from the specified theme
+      const updatedThemes = state.analysis.themes.map((theme) => {
+        if (theme.id === themeId && theme.responseIndices.includes(responseIndex)) {
+          const newIndices = theme.responseIndices.filter(idx => idx !== responseIndex);
+          return {
+            ...theme,
+            responseIndices: newIndices,
+            count: newIndices.length,
+            percentage: (newIndices.length / state.analysis!.totalResponses) * 100,
+          };
+        }
+        return theme;
+      });
+
+      // Check if response is still in any theme
+      const stillInAnyTheme = updatedThemes.some(theme =>
+        theme.responseIndices.includes(responseIndex)
+      );
+
+      // If not in any theme, add to unassigned
+      const updatedUnassigned = stillInAnyTheme
+        ? state.analysis.unassignedIndices
+        : [...state.analysis.unassignedIndices, responseIndex].sort((a, b) => a - b);
+
+      return {
+        ...state,
+        analysis: {
+          ...state.analysis,
+          themes: updatedThemes,
+          unassignedIndices: updatedUnassigned,
+          assignedCount: state.analysis.totalResponses - updatedUnassigned.length,
+          coveragePercentage:
+            ((state.analysis.totalResponses - updatedUnassigned.length) /
+              state.analysis.totalResponses) *
+            100,
+        },
+      };
+    }
+
     case 'SPLIT_THEME': {
       if (!state.analysis) return state;
 

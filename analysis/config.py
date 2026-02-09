@@ -13,8 +13,8 @@ class Config:
     GOOGLE_API_KEY = os.getenv("GOOGLE_GENERATIVE_AI_API_KEY")
 
     # Model names
-    EMBEDDING_MODEL = "models/embedding-001"
-    LLM_MODEL = "gemini-3-flash-preview"
+    EMBEDDING_MODEL = "models/gemini-embedding-001"
+    LLM_MODEL = "models/gemini-3-flash-preview"
 
     # Clustering parameters
     MIN_CLUSTERS = 4
@@ -37,20 +37,11 @@ class Config:
     HYBRID_THRESHOLD_AVG_LENGTH = 300
 
     # Multi-theme assignment
-    SIMILARITY_THRESHOLD = 0.75  # Increased from 0.7 for more selective assignment
+    MULTI_THEME_RELATIVE_FACTOR = 0.95  # Response must be within 95% of best centroid similarity
+    MAX_THEMES_PER_RESPONSE = 3  # Hard cap on themes per response
 
     # Performance
     MAX_LABELING_RETRIES = 1  # Reduced retries for faster processing
-
-
-class ConcurrencyConfig:
-    """Concurrency limits to respect API rate limits."""
-
-    EMBEDDING_BATCH_SIZE = 100
-    MAX_CONCURRENT_EMBEDDING_BATCHES = 5
-    MAX_CONCURRENT_EXTRACTIONS = 10
-    MAX_CONCURRENT_LABELS = 12
-    DELAY_BETWEEN_BATCHES_MS = 100
 
 
 # Singleton instance

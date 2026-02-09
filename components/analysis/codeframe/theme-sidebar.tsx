@@ -9,32 +9,50 @@ import { Button } from '@/components/ui/button';
 
 export default function ThemeSidebar() {
   const { state, dispatch } = useAppContext();
-  const [dragOverThemeId, setDragOverThemeId] = useState<string | null>(null);
+  const [dragOverSidebar, setDragOverSidebar] = useState(false);
+  const [draggingThemeId, setDraggingThemeId] = useState<string | null>(null);
 
   if (!state.analysis) return null;
 
-  const handleDragOver = (e: React.DragEvent, themeId: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverThemeId(themeId);
+  const handleThemeDragStart = (e: React.DragEvent, themeId: string) => {
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', themeId); // Standard MIME type
+    e.dataTransfer.setData('application/theme-id', themeId); // Custom identifier
+    setDraggingThemeId(themeId);
   };
 
-  const handleDragLeave = () => {
-    setDragOverThemeId(null);
+  const handleThemeDragEnd = () => {
+    setDraggingThemeId(null);
   };
 
-  const handleDrop = (e: React.DragEvent, themeId: string) => {
-    e.preventDefault();
-    const responseIndex = parseInt(e.dataTransfer.getData('responseIndex'));
+  // Sidebar becomes drop zone for removing badges
+  const handleSidebarDragOver = (e: React.DragEvent) => {
+    // Check if we're dragging a badge (has both themeId and responseIndex)
+    const types = e.dataTransfer.types;
+    if (types.includes('application/badge-remove')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      setDragOverSidebar(true);
+    }
+  };
 
-    if (!isNaN(responseIndex)) {
+  const handleSidebarDragLeave = () => {
+    setDragOverSidebar(false);
+  };
+
+  const handleSidebarDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const themeId = e.dataTransfer.getData('application/badge-theme-id');
+    const responseIndex = parseInt(e.dataTransfer.getData('application/badge-response-index'));
+
+    if (themeId && !isNaN(responseIndex)) {
       dispatch({
-        type: 'ADD_THEME_TO_RESPONSE',
+        type: 'REMOVE_THEME_FROM_RESPONSE',
         payload: { responseIndex, themeId },
       });
     }
 
-    setDragOverThemeId(null);
+    setDragOverSidebar(false);
   };
 
   const handleCreateTheme = () => {
@@ -51,10 +69,20 @@ export default function ThemeSidebar() {
 
   return (
     <div className="w-64 flex-shrink-0">
-      <div className="sticky top-4 bg-white border border-slate-200 rounded-lg p-4">
+      <div
+        className={cn(
+          'sticky top-4 bg-white border-2 rounded-lg p-4 transition-colors',
+          dragOverSidebar
+            ? 'border-red-400 bg-red-50'
+            : 'border-slate-200'
+        )}
+        onDragOver={handleSidebarDragOver}
+        onDragLeave={handleSidebarDragLeave}
+        onDrop={handleSidebarDrop}
+      >
         <h3 className="font-semibold text-slate-900 mb-3">Themes</h3>
         <p className="text-xs text-slate-500 mb-3">
-          Drag rows to themes to assign. Responses can belong to multiple themes.
+          Drag themes to rows to assign. Drag badges here to remove.
         </p>
 
         <div className="space-y-2">
@@ -63,13 +91,13 @@ export default function ThemeSidebar() {
             return (
               <div
                 key={theme.id}
-                onDragOver={(e) => handleDragOver(e, theme.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, theme.id)}
+                draggable
+                onDragStart={(e) => handleThemeDragStart(e, theme.id)}
+                onDragEnd={handleThemeDragEnd}
                 className={cn(
-                  'flex items-center gap-2 p-3 rounded-lg border-2 transition-colors cursor-pointer',
-                  dragOverThemeId === theme.id
-                    ? 'border-blue-500 bg-blue-50'
+                  'flex items-center gap-2 p-3 rounded-lg border-2 transition-colors cursor-move',
+                  draggingThemeId === theme.id
+                    ? 'opacity-50 border-slate-300'
                     : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 )}
               >
@@ -86,18 +114,8 @@ export default function ThemeSidebar() {
             );
           })}
 
-          {/* Unassigned drop zone */}
-          <div
-            onDragOver={(e) => handleDragOver(e, 'unassigned')}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, 'unassigned')}
-            className={cn(
-              'flex items-center gap-2 p-3 rounded-lg border-2 transition-colors cursor-pointer',
-              dragOverThemeId === 'unassigned'
-                ? 'border-slate-500 bg-slate-50'
-                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-            )}
-          >
+          {/* Unassigned (informational only) */}
+          <div className="flex items-center gap-2 p-3 rounded-lg border-2 border-slate-200 bg-slate-50">
             <Circle className="w-3 h-3 text-slate-400 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-slate-600 truncate">

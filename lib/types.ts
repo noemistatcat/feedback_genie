@@ -68,6 +68,7 @@ export type AppAction =
   | { type: 'MERGE_THEMES'; payload: { sourceId: string; targetId: string } }
   | { type: 'REASSIGN_RESPONSE'; payload: { responseIndex: number; newThemeId: string } }
   | { type: 'ADD_THEME_TO_RESPONSE'; payload: { responseIndex: number; themeId: string } }
+  | { type: 'REMOVE_THEME_FROM_RESPONSE'; payload: { responseIndex: number; themeId: string } }
   | { type: 'SPLIT_THEME'; payload: { sourceThemeId: string; newThemeName: string; newThemeDescription: string; responseIndicesToMove: number[] } }
   | { type: 'CREATE_THEME'; payload: { name: string; description: string } }
   | { type: 'SET_ACTIVE_VIEW'; payload: 'themes' | 'codeframe' }

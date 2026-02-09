@@ -134,37 +134,56 @@ def calculate_cluster_confidence(
 def assign_multi_themes(
     embeddings: np.ndarray,
     centroids: np.ndarray,
-    similarity_threshold: Optional[float] = None
+    relative_factor: Optional[float] = None,
+    max_themes_per_response: Optional[int] = None
 ) -> List[List[int]]:
     """
-    Assign each response to multiple themes based on cosine similarity.
+    Assign each response to multiple themes based on relative cosine similarity.
 
-    A response can belong to multiple themes if its similarity to the
-    centroid exceeds the threshold.
+    A response can belong to multiple themes if its similarity to a centroid
+    is within relative_factor of the best-matching centroid (e.g., 95% of max).
+    This adapts to the actual similarity distribution rather than using a fixed
+    absolute threshold.
 
     Args:
         embeddings: Numpy array of response embeddings
         centroids: Cluster centroids
-        similarity_threshold: Minimum similarity to assign (default from config)
+        relative_factor: Similarity must be >= (max_sim * relative_factor) (default from config)
+        max_themes_per_response: Hard cap on themes per response (default from config)
 
     Returns:
         List where each element is a list of theme indices that response belongs to
     """
-    if similarity_threshold is None:
-        similarity_threshold = config.SIMILARITY_THRESHOLD
+    if relative_factor is None:
+        relative_factor = config.MULTI_THEME_RELATIVE_FACTOR
+    if max_themes_per_response is None:
+        max_themes_per_response = config.MAX_THEMES_PER_RESPONSE
 
     # Calculate cosine similarity between each embedding and all centroids
     similarities = cosine_similarity(embeddings, centroids)
 
-    # Assign each response to themes where similarity >= threshold
+    # Assign each response to themes using relative threshold
     multi_assignments = []
     for i, sims in enumerate(similarities):
-        # Get theme indices where similarity exceeds threshold
-        assigned_themes = [j for j, sim in enumerate(sims) if sim >= similarity_threshold]
+        # Find max similarity
+        max_sim = np.max(sims)
 
-        # If no themes meet threshold, assign to most similar
+        # Calculate relative threshold based on max
+        relative_threshold = max_sim * relative_factor
+
+        # Get theme indices where similarity exceeds relative threshold
+        assigned_themes = [j for j, sim in enumerate(sims) if sim >= relative_threshold]
+
+        # If no themes meet threshold (shouldn't happen but be safe), assign to most similar
         if not assigned_themes:
             assigned_themes = [int(np.argmax(sims))]
+
+        # Cap the number of themes per response
+        if len(assigned_themes) > max_themes_per_response:
+            # Keep only the top max_themes_per_response by similarity
+            theme_sims = [(j, sims[j]) for j in assigned_themes]
+            theme_sims.sort(key=lambda x: x[1], reverse=True)
+            assigned_themes = [j for j, _ in theme_sims[:max_themes_per_response]]
 
         multi_assignments.append(assigned_themes)
 

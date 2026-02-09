@@ -41,7 +41,7 @@ class AnalyzeResponse(BaseModel):
     coverage_percentage: float
     processing_time_ms: int
     method_used: str
-    model_used: str = "gemini-1.5-flash-latest"
+    model_used: str = "gemini-3-flash-preview"
 
 
 class ProgressUpdate(BaseModel):
